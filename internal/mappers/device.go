@@ -44,7 +44,7 @@ func MeterDevice(device *common.Meter) alice.Device {
 		},
 		Properties: []alice.Property{
 			{
-				Type:        alice.PropertyTypeEvent,
+				Type:        alice.PropertyTypeFloat,
 				Retrievable: true,
 				Reportable:  false,
 				Parameters: alice.PropertiesFloatParameters{
