@@ -93,6 +93,7 @@ func (c *client) Value(ctx context.Context) meter.Value {
 
 		return meter.Value{Address: c.config.Meter, Error: fmt.Errorf("connect: %w", err)}
 	}
+	defer conn.Close()
 
 	reqR, err := rand.Int(rand.Reader, big.NewInt(math.MaxUint16))
 	if err != nil {
