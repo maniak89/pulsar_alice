@@ -2,7 +2,6 @@ package meterreader
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"pulsar_alice/internal/meter"
@@ -77,25 +76,11 @@ func (r *reader) Meters(ctx context.Context, userID string) []*common.Meter {
 
 	result := make([]*common.Meter, len(clients))
 
-	var wg sync.WaitGroup
-	wg.Add(len(clients))
-
 	for i, cl := range clients {
-		go r.readAsync(ctx, &wg, result, i, cl)
+		result[i] = cl.readMeter(ctx, time.Duration(r.config.RefreshRate))
 	}
 
-	wg.Wait()
-
 	return result
-}
-
-func (r *reader) readAsync(ctx context.Context, wg *sync.WaitGroup, results []*common.Meter, instanceID int, client *client) {
-	defer wg.Done()
-
-	ctx, cancel := context.WithTimeout(ctx, r.config.ReadTimeout)
-	defer cancel()
-
-	results[instanceID] = client.readMeter(ctx, time.Duration(r.config.RefreshRate))
 }
 
 func (cl *client) readMeter(ctx context.Context, refreshRate time.Duration) *common.Meter {
