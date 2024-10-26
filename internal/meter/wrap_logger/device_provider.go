@@ -18,7 +18,7 @@ type wrapper struct {
 }
 
 type Logger interface {
-	Log(ctx context.Context, routerID string, level storage.LogLevel, msg string)
+	Log(ctx context.Context, meterID string, level storage.LogLevel, msg string)
 }
 
 func New(child meter.ValueProvider, meterID string, logger Logger) meter.ValueProvider {

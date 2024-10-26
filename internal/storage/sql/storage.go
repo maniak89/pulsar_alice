@@ -89,7 +89,7 @@ func (s *storage) Meters(ctx context.Context) ([]*storageModels.Meter, error) {
 	logger := log.Ctx(ctx)
 	rows, err := s.db.SelectAllFrom(storageModels.MeterTable, "")
 	if err != nil {
-		logger.Error().Err(err).Msg("Failed find routers")
+		logger.Error().Err(err).Msg("Failed find meters")
 
 		return nil, err
 	}

@@ -23,10 +23,10 @@ CREATE INDEX IF NOT EXISTS user_id_idx
 
 CREATE TABLE IF NOT EXISTS logs (
     id uuid NOT NULL default uuid_generate_v4(),
-    router_id uuid NOT NULL,
+    meter_id uuid NOT NULL,
     time timestamp without time zone NOT NULL DEFAULT now(),
     level log_level NOT NULL,
     message text NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY (router_id) REFERENCES routers(id) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (meter_id) REFERENCES meters(id) ON UPDATE CASCADE ON DELETE CASCADE
 );
