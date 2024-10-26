@@ -75,7 +75,7 @@ func (r *reader) Meters(ctx context.Context, userID string) []*common.Meter {
 		return nil
 	}
 
-	result := make([]*common.Meter, 0, len(clients))
+	result := make([]*common.Meter, len(clients))
 
 	var wg sync.WaitGroup
 	wg.Add(len(clients))
