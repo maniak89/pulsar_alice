@@ -33,7 +33,6 @@ func (v *meterTableType) Columns() []string {
 		"name",
 		"address",
 		"serail_number",
-		"period_check",
 		"is_cold",
 		"created_at",
 		"updated_at",
@@ -66,7 +65,6 @@ var MeterTable = &meterTableType{
 			{Name: "Name", Type: "string", Column: "name"},
 			{Name: "Address", Type: "string", Column: "address"},
 			{Name: "SerialNumber", Type: "string", Column: "serail_number"},
-			{Name: "PeriodCheck", Type: "time.Duration", Column: "period_check"},
 			{Name: "Cold", Type: "bool", Column: "is_cold"},
 			{Name: "CreatedAt", Type: "time.Time", Column: "created_at"},
 			{Name: "UpdatedAt", Type: "time.Time", Column: "updated_at"},
@@ -78,16 +76,15 @@ var MeterTable = &meterTableType{
 
 // String returns a string representation of this struct or record.
 func (s Meter) String() string {
-	res := make([]string, 9)
+	res := make([]string, 8)
 	res[0] = "ID: " + reform.Inspect(s.ID, true)
 	res[1] = "UserID: " + reform.Inspect(s.UserID, true)
 	res[2] = "Name: " + reform.Inspect(s.Name, true)
 	res[3] = "Address: " + reform.Inspect(s.Address, true)
 	res[4] = "SerialNumber: " + reform.Inspect(s.SerialNumber, true)
-	res[5] = "PeriodCheck: " + reform.Inspect(s.PeriodCheck, true)
-	res[6] = "Cold: " + reform.Inspect(s.Cold, true)
-	res[7] = "CreatedAt: " + reform.Inspect(s.CreatedAt, true)
-	res[8] = "UpdatedAt: " + reform.Inspect(s.UpdatedAt, true)
+	res[5] = "Cold: " + reform.Inspect(s.Cold, true)
+	res[6] = "CreatedAt: " + reform.Inspect(s.CreatedAt, true)
+	res[7] = "UpdatedAt: " + reform.Inspect(s.UpdatedAt, true)
 	return strings.Join(res, ", ")
 }
 
@@ -100,7 +97,6 @@ func (s *Meter) Values() []interface{} {
 		s.Name,
 		s.Address,
 		s.SerialNumber,
-		s.PeriodCheck,
 		s.Cold,
 		s.CreatedAt,
 		s.UpdatedAt,
@@ -116,7 +112,6 @@ func (s *Meter) Pointers() []interface{} {
 		&s.Name,
 		&s.Address,
 		&s.SerialNumber,
-		&s.PeriodCheck,
 		&s.Cold,
 		&s.CreatedAt,
 		&s.UpdatedAt,
