@@ -78,6 +78,14 @@ func (r *reader) Run(ctx context.Context, ready func()) error {
 	ctx, r.cancelFunc = context.WithCancel(ctx)
 	defer r.cancelFunc()
 
+	if err := r.checkUpdates(ctx); err != nil {
+		logger.Error().Err(err).Msg("check updates")
+
+		return err
+	}
+
+	ready()
+
 	for {
 		select {
 		case <-ctx.Done():
