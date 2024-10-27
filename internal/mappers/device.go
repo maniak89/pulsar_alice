@@ -20,7 +20,19 @@ func MeterState(meter *common.Meter) alice.PayloadStateDevice {
 			property,
 		},
 	}
+}
 
+func MetersState(meters []*common.Meter) []alice.PayloadStateDevice {
+	if len(meters) == 0 {
+		return nil
+	}
+
+	res := make([]alice.PayloadStateDevice, 0, len(meters))
+	for _, m := range meters {
+		res = append(res, MeterState(m))
+	}
+
+	return res
 }
 
 func MeterDevice(device *common.Meter) alice.Device {
@@ -46,7 +58,7 @@ func MeterDevice(device *common.Meter) alice.Device {
 			{
 				Type:        alice.PropertyTypeFloat,
 				Retrievable: true,
-				Reportable:  false,
+				Reportable:  true,
 				Parameters: alice.PropertiesFloatParameters{
 					Instance: alice.PropertyParameterInstanceWaterMeter,
 					Unit:     alice.UnitCubicMeter,

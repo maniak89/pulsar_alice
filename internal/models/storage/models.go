@@ -7,15 +7,14 @@ import (
 
 //reform:meters
 type Meter struct {
-	ID           string        `reform:"id,pk"`
-	UserID       string        `reform:"user_id"`
-	Name         string        `reform:"name"`
-	Address      string        `reform:"address"`
-	SerialNumber string        `reform:"serail_number"`
-	PeriodCheck  time.Duration `reform:"period_check"`
-	Cold         bool          `reform:"is_cold"`
-	CreatedAt    time.Time     `reform:"created_at"`
-	UpdatedAt    time.Time     `reform:"updated_at"`
+	ID           string    `reform:"id,pk"`
+	UserID       string    `reform:"user_id"`
+	Name         string    `reform:"name"`
+	Address      string    `reform:"address"`
+	SerialNumber string    `reform:"serail_number"`
+	Cold         bool      `reform:"is_cold"`
+	CreatedAt    time.Time `reform:"created_at"`
+	UpdatedAt    time.Time `reform:"updated_at"`
 }
 
 func (s *Meter) BeforeUpdate() error {
@@ -26,8 +25,7 @@ func (s *Meter) BeforeUpdate() error {
 func (s *Meter) Equal(o *Meter) bool {
 	if s.ID != o.ID ||
 		s.Address != o.Address ||
-		s.Name != o.Name ||
-		s.PeriodCheck != o.PeriodCheck {
+		s.Name != o.Name {
 
 		return false
 	}

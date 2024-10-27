@@ -6,6 +6,7 @@ import (
 	"os/signal"
 	"pulsar_alice/internal/log"
 	"pulsar_alice/internal/meterreader"
+	"pulsar_alice/internal/notifier/alice"
 	"pulsar_alice/internal/services"
 	"pulsar_alice/internal/services/rest"
 	"pulsar_alice/internal/storage/sql"
@@ -22,6 +23,7 @@ type config struct {
 	Rest        rest.Config
 	Storage     sql.Config
 	MeterReader meterreader.Config
+	Notifier    alice.Config
 }
 
 const signalChLen = 10
@@ -65,9 +67,12 @@ func main() {
 		}
 	}()
 
-	meterReader, err := meterreader.New(ctx, cfg.MeterReader, storage)
+	meterReader, err := meterreader.New(ctx, cfg.MeterReader, storage, alice.New(cfg.Notifier))
 	if err != nil {
 		logger.Fatal().Err(err).Msg("Failed create meter reader")
+	}
+	if err := orderRunner.SetupService(ctx, meterReader, "meter_reader", g); err != nil {
+		logger.Fatal().Err(err).Msg("Failed setup meter_reader service")
 	}
 
 	restService, err := rest.New(ctx, cfg.Rest, logger.With().Str("role", "rest").Logger(), meterReader)
