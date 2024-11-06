@@ -4,18 +4,19 @@ import (
 	"context"
 	"os"
 	"os/signal"
-	"pulsar_alice/internal/log"
-	"pulsar_alice/internal/meterreader"
-	"pulsar_alice/internal/notifier/alice"
-	"pulsar_alice/internal/services"
-	"pulsar_alice/internal/services/rest"
-	"pulsar_alice/internal/storage/sql"
 	"syscall"
 
 	"github.com/joeshaw/envdecode"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/oklog/run"
 	zerolog "github.com/rs/zerolog/log"
+
+	"pulsar_alice/internal/log"
+	"pulsar_alice/internal/meterreader"
+	"pulsar_alice/internal/notifier/alice"
+	"pulsar_alice/internal/services"
+	"pulsar_alice/internal/services/rest"
+	"pulsar_alice/internal/storage/sql"
 )
 
 type config struct {
