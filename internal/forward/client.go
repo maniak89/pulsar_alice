@@ -128,6 +128,10 @@ func (c *Session) auth(ctx context.Context) error {
 
 	defer resp.Body.Close()
 
+	if len(resp.Cookies()) == 0 {
+		return errors.New("auth failed")
+	}
+
 	return nil
 }
 
