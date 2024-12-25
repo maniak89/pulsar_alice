@@ -259,7 +259,12 @@ func (c *Session) getMetrics(ctx context.Context, info *accountInfo) (*metersRes
 }
 
 func (c *Session) setMetrics(ctx context.Context, accountInfo *accountInfo, meterInfo *metersResponse, cold, hot float64) error {
-	logger := log.Ctx(ctx).With().Str("method", "getMetrics").Logger()
+	logger := log.Ctx(ctx).With().
+		Str("method", "setMetrics").
+		Str("account", accountInfo.accountID).
+		Float64("cold", cold).
+		Float64("hot", hot).
+		Logger()
 
 	req, err := http.NewRequest(http.MethodPost,
 		c.config.Address+"/ajax/write_newmetering.php",
@@ -287,6 +292,8 @@ func (c *Session) setMetrics(ctx context.Context, accountInfo *accountInfo, mete
 
 		return errors.New("invalid status")
 	}
+
+	logger.Debug().Msg("Send success")
 
 	return nil
 }

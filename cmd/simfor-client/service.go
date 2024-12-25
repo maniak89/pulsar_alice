@@ -78,7 +78,7 @@ func (s *service) Shutdown(ctx context.Context) error {
 }
 
 func (s *service) meterValue(ctx context.Context, meterNumber string) (float64, error) {
-	logger := log.Ctx(ctx)
+	logger := log.Ctx(ctx).With().Str("meter", meterNumber).Logger()
 
 	meter := pulsar.New(pulsar.Config{
 		Address: s.config.Meters.Address,
@@ -98,6 +98,8 @@ func (s *service) meterValue(ctx context.Context, meterNumber string) (float64, 
 
 		return 0, val.Error
 	}
+
+	logger.Debug().Float64("value", val.Value).Msg("read success")
 
 	return val.Value, nil
 }
