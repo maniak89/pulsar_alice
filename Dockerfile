@@ -1,4 +1,4 @@
-FROM golang:1.23 AS build
+FROM golang:1.26.3 AS build
 
 WORKDIR /tmp
 RUN CGO_ENABLED=0 go install github.com/go-delve/delve/cmd/dlv@latest && \

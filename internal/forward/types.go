@@ -1,5 +1,10 @@
 package forward
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 type accountInfo struct {
 	webAccountID string
 	accountID    string
@@ -50,8 +55,35 @@ type metersResponse struct {
 		Rsol   string `json:"rsol"`
 		Trans  string `json:"trans"`
 		Meters struct {
-			Row []meterResponse `json:"row"`
+			Row meterResponses `json:"row"`
 		} `json:"meters"`
 		Data map[int]responseService `json:"data"`
 	} `json:"answer"`
+}
+
+type meterResponses []meterResponse
+
+func (r *meterResponses) UnmarshalJSON(data []byte) error {
+	if len(data) == 0 {
+		*r = nil
+
+		return nil
+	}
+
+	if data[0] == '[' {
+		if err := json.Unmarshal(data, (*[]meterResponse)(r)); err != nil {
+			return fmt.Errorf("unmarshal as slice: %w", err)
+		}
+
+		return nil
+	}
+
+	var mr meterResponse
+	if err := json.Unmarshal(data, &mr); err != nil {
+		return fmt.Errorf("unmarshal as one: %w", err)
+	}
+
+	*r = []meterResponse{mr}
+
+	return nil
 }

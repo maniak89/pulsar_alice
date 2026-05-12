@@ -25,12 +25,15 @@ func new(config config) *service {
 func (s *service) Run(ctx context.Context, ready func()) error {
 	defer close(s.doneCh)
 	ctx, s.cancelFunc = context.WithCancel(ctx)
+	logger := log.Ctx(ctx)
 
 	ready()
 
 	if err := ctx.Err(); err != nil {
 		return err
 	}
+
+	logger.Trace().Msg("Fetch metrics")
 
 	coldValue, err := s.meterValue(ctx, s.config.Meters.ColdMeter)
 	if err != nil {
@@ -50,19 +53,27 @@ func (s *service) Run(ctx context.Context, ready func()) error {
 		return err
 	}
 
+	logger.Trace().Msg("Start session")
+
 	forwardClient := forward.New(s.config.Forward)
 	session, err := forwardClient.StartSession(ctx)
 	if err != nil {
 		return err
 	}
 
+	logger.Trace().Msg("Session started")
+
 	if err := ctx.Err(); err != nil {
 		return err
 	}
 
+	logger.Trace().Msg("Send metrics")
+
 	if err := session.SendMetrics(ctx, coldValue, hotValue); err != nil {
 		return err
 	}
+
+	logger.Trace().Msg("Send metrics success")
 
 	return nil
 }
@@ -78,7 +89,7 @@ func (s *service) Shutdown(ctx context.Context) error {
 }
 
 func (s *service) meterValue(ctx context.Context, meterNumber string) (float64, error) {
-	logger := log.Ctx(ctx)
+	logger := log.Ctx(ctx).With().Str("meter", meterNumber).Logger()
 
 	meter := pulsar.New(pulsar.Config{
 		Address: s.config.Meters.Address,
@@ -98,6 +109,8 @@ func (s *service) meterValue(ctx context.Context, meterNumber string) (float64, 
 
 		return 0, val.Error
 	}
+
+	logger.Debug().Float64("value", val.Value).Msg("read success")
 
 	return val.Value, nil
 }

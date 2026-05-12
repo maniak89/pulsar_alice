@@ -6,7 +6,6 @@ import (
 	"errors"
 	"io"
 	"net/http"
-	"net/http/cookiejar"
 	"net/url"
 	"regexp"
 	"strconv"
@@ -44,35 +43,23 @@ func New(config Config) *Client {
 	}
 }
 
-func (c *Client) newClient() (*http.Client, error) {
-	jar, err := cookiejar.New(nil)
-	if err != nil {
-		return nil, err
-	}
-
+func (c *Client) newClient() *http.Client {
 	return &http.Client{
 		Timeout: c.config.Timout,
-		Jar:     jar,
-	}, nil
+		Jar:     newCookieJar(),
+	}
 }
 
 func (c *Client) StartSession(ctx context.Context) (*Session, error) {
 	logger := log.Ctx(ctx).With().Str("method", "startSession").Logger()
-	req, err := http.NewRequest(http.MethodGet, c.config.Address, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.config.Address, nil)
 	if err != nil {
 		logger.Error().Err(err).Msg("create request")
 
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
-
-	cl, err := c.newClient()
-	if err != nil {
-		logger.Error().Err(err).Msg("create client")
-
-		return nil, err
-	}
+	cl := c.newClient()
 
 	resp, err := cl.Do(req)
 	if err != nil {
@@ -109,7 +96,7 @@ func (c *Session) auth(ctx context.Context) error {
 		"Login":         []string{"Войти"},
 	}
 
-	req, err := http.NewRequest(http.MethodPost, c.config.Address+"/auth/?login=yes", strings.NewReader(data.Encode()))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.config.Address+"/auth/?login=yes", strings.NewReader(data.Encode()))
 	if err != nil {
 		logger.Error().Err(err).Msg("create request")
 
@@ -117,7 +104,6 @@ func (c *Session) auth(ctx context.Context) error {
 	}
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req = req.WithContext(ctx)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -138,14 +124,12 @@ func (c *Session) auth(ctx context.Context) error {
 func (c *Session) getAccounts(ctx context.Context) ([]string, error) {
 	logger := log.Ctx(ctx).With().Str("method", "getAccounts").Logger()
 
-	req, err := http.NewRequest(http.MethodGet, c.config.Address+"/ameter/", nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.config.Address+"/ameter/", nil)
 	if err != nil {
 		logger.Error().Err(err).Msg("create request")
 
 		return nil, err
 	}
-
-	req = req.WithContext(ctx)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -187,14 +171,12 @@ func parseRegString(reg *regexp.Regexp, in []byte) string {
 func (c *Session) getAccountInfo(ctx context.Context, accountID string) (*accountInfo, error) {
 	logger := log.Ctx(ctx).With().Str("method", "getAccountInfo").Logger()
 
-	req, err := http.NewRequest(http.MethodGet, c.config.Address+"/ameter/?accountId="+accountID, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.config.Address+"/ameter/?accountId="+accountID, nil)
 	if err != nil {
 		logger.Error().Err(err).Msg("create request")
 
 		return nil, err
 	}
-
-	req = req.WithContext(ctx)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -229,7 +211,7 @@ func (c *Session) getMetrics(ctx context.Context, info *accountInfo) (*metersRes
 		"dbId":         []string{info.dbID},
 	}
 
-	req, err := http.NewRequest(http.MethodPost, c.config.Address+"/ajax/meters.php", strings.NewReader(data.Encode()))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.config.Address+"/ajax/meters.php", strings.NewReader(data.Encode()))
 	if err != nil {
 		logger.Error().Err(err).Msg("create request")
 
@@ -237,7 +219,6 @@ func (c *Session) getMetrics(ctx context.Context, info *accountInfo) (*metersRes
 	}
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req = req.WithContext(ctx)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -259,9 +240,14 @@ func (c *Session) getMetrics(ctx context.Context, info *accountInfo) (*metersRes
 }
 
 func (c *Session) setMetrics(ctx context.Context, accountInfo *accountInfo, meterInfo *metersResponse, cold, hot float64) error {
-	logger := log.Ctx(ctx).With().Str("method", "getMetrics").Logger()
+	logger := log.Ctx(ctx).With().
+		Str("method", "setMetrics").
+		Str("account", accountInfo.accountID).
+		Float64("cold", cold).
+		Float64("hot", hot).
+		Logger()
 
-	req, err := http.NewRequest(http.MethodPost,
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost,
 		c.config.Address+"/ajax/write_newmetering.php",
 		strings.NewReader(makePayload(accountInfo, meterInfo, cold, hot).Encode()))
 	if err != nil {
@@ -271,7 +257,6 @@ func (c *Session) setMetrics(ctx context.Context, accountInfo *accountInfo, mete
 	}
 
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req = req.WithContext(ctx)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
@@ -287,6 +272,8 @@ func (c *Session) setMetrics(ctx context.Context, accountInfo *accountInfo, mete
 
 		return errors.New("invalid status")
 	}
+
+	logger.Debug().Msg("Send success")
 
 	return nil
 }
